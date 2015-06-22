@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" xmlns:robobunny="http://robobunny.com">
+    <PreferenceCategory android:title="Status Bar Mods">
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="clock_visibility"
+            android:summaryOff="Clock is hidden"
+            android:summaryOn="Clock is visible"
+            android:title="Set Clock Visibility" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="brightness_visibility"
+            android:summaryOff="Brightness slider hidden"
+            android:summaryOn="Brightness slider is visible"
+            android:title="Notification Brightness Visibility" />
+        <com.wubydax.romcontrol.MyListPreference
+            android:defaultValue="2"
+            android:entries="@array/clock_position_entries"
+            android:entryValues="@array/clock_position_values"
+            android:key="clock_position"
+            android:title="Status Bar Clock Position" />
+        <com.wubydax.romcontrol.MyEditTextPreference
+            android:defaultValue="simpletext"
+            android:key="carrier_text"
+            android:title="Set Custom Carrier Text" />
+        <com.wubydax.romcontrol.ColorPickerPreference
+            alphaSlider="true"
+            android:defaultValue="-16777215"
+            android:key="clock_color"
+            android:title="Choose Clock Color" />
+        <PreferenceScreen
+            android:key="script#test"
+            android:summary="Click see what happens"
+            android:title="New Preference Screen" />
+        <com.wubydax.romcontrol.SeekBarPreference
+            android:defaultValue="10"
+            android:key="network_traffic_autohide_threshold"
+            android:max="100"
+            android:title="Autohide Threshold"
+            robobunny:min="0"
+            robobunny:unitsLeft=""
+            robobunny:unitsRight="Kb/s"
+            android:icon="@null"/>
+        <PreferenceScreen
+
+            android:summary="New Preference screen"
+            android:title="New Preference Screen" >
+            <PreferenceCategory
+                android:title="new category"/>
+            <CheckBoxPreference android:title="Checkbox" android:key="text_checkbox"/>
+            <SwitchPreference android:title="Switch" android:key="test_switch"/>
+            <PreferenceScreen
+                android:key="script#second"
+
+                android:summary="New Preference screen"
+                android:title="New Preference Screen" >
+                <PreferenceCategory
+                    android:title="new category"/>
+                <CheckBoxPreference android:title="Checkbox" android:key="text_checkbox"/>
+                <SwitchPreference android:title="Switch" android:key="test_switch"/>
+                <PreferenceScreen
+                    android:key="script#third"
+
+                    android:summary="New Preference screen"
+                    android:title="New Preference Screen" >
+                    <PreferenceCategory
+                        android:title="new category"/>
+                    <CheckBoxPreference android:title="Checkbox" android:key="text_checkbox"/>
+                    <SwitchPreference android:title="Switch" android:key="test_switch"/>
+                </PreferenceScreen>
+            </PreferenceScreen>
+            </PreferenceScreen>
+
+    </PreferenceCategory>
+
+
+</PreferenceScreen>
