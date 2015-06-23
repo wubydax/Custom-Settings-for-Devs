@@ -182,6 +182,7 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
                     actualInt = Settings.System.getInt(cr, key);
                 } catch (Settings.SettingNotFoundException e) {
                     Settings.System.putInt(cr, key, prefInt);
+                    actualInt = prefInt;
                 }
 
                 actualBoolean = (actualInt == 0) ? false : true;
@@ -196,6 +197,7 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
                     actualInt = Settings.System.getInt(cr, key);
                 } catch (Settings.SettingNotFoundException e) {
                     Settings.System.putInt(cr, key, prefInt);
+                    actualInt = prefInt;
                 }
                 if (prefInt != actualInt) {
                     ed.putInt(key, actualInt).commit();
@@ -207,6 +209,7 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
                 actualString = Settings.System.getString(cr, key);
                 if (actualString == null) {
                     Settings.System.putString(cr, key, prefString);
+                    actualString = prefString;
                 } else {
                     if (!prefString.equals(actualString)) {
                         ed.putString(key, actualString).commit();
