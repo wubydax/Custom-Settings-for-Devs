@@ -44,16 +44,14 @@ public class NavigationDrawerAdapter extends RecyclerView.Adapter<NavigationDraw
         context = c;
     }
 
-    public NavigationDrawerCallbacks getNavigationDrawerCallbacks() {
-        return mNavigationDrawerCallbacks;
-    }
 
     public void setNavigationDrawerCallbacks(NavigationDrawerCallbacks navigationDrawerCallbacks) {
         mNavigationDrawerCallbacks = navigationDrawerCallbacks;
     }
-
+    //Setting view for a Holder for single item in Nav Drawer RecyclerView
     @Override
     public NavigationDrawerAdapter.ViewHolder onCreateViewHolder(final ViewGroup viewGroup, int i) {
+        //Inflating layout for single row view
         View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.drawer_row, viewGroup, false);
         final ViewHolder viewHolder = new ViewHolder(v);
         viewHolder.itemView.setClickable(true);
@@ -68,13 +66,14 @@ public class NavigationDrawerAdapter extends RecyclerView.Adapter<NavigationDraw
                                                        mSelectedPosition = viewHolder.getPosition();
                                                        v.setSelected(true);
                                                        mSelectedView = v;
-
+                                                        //Creating communication between the adapter and the fragment and the activity, using callback interface
+                                                       //Otherwise we cannot access the onItemClickListener from the activity
                                                        if (mNavigationDrawerCallbacks != null)
                                                            mNavigationDrawerCallbacks.onNavigationDrawerItemSelected(viewHolder.getPosition());
                                                    }
                                                }
         );
-
+        //Creating a choice for the overlay colors for the selected menu item, using attr, which differentiates between different themes and colors in them
         TypedValue typedValue = new TypedValue();
         Resources.Theme theme = context.getTheme();
         theme.resolveAttribute(R.attr.nav_item_color_selector, typedValue, true);
@@ -87,7 +86,7 @@ public class NavigationDrawerAdapter extends RecyclerView.Adapter<NavigationDraw
 
         return viewHolder;
     }
-
+    //Binding the Holder to each item based on position in a list of NavItem class objects
     @Override
     public void onBindViewHolder(NavigationDrawerAdapter.ViewHolder viewHolder, int i) {
         viewHolder.textView.setText(mData.get(i).getText());
@@ -114,6 +113,7 @@ public class NavigationDrawerAdapter extends RecyclerView.Adapter<NavigationDraw
         return mData != null ? mData.size() : 0;
     }
 
+    //ViewHolder class finds each view in a row by its id in the row layout
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView textView;
         public ImageView icon;
