@@ -27,10 +27,13 @@ import java.util.ArrayList;
 public class HandleScripts {
     Context c;
     AssetManager am;
+    //Our folder containing scripts will have the same name in both assets and files in /data/data/<package name>/files
+    //Make sure when you create a script it ends with .sh and when you create a key in preferences it's called #script#filename without the .sh
     String scriptFolderName = "scripts";
     String[] scriptsInAssets, scriptsInFiles;
     String scriptFilesDirPath;
 
+    //Main constructor. we only need context to access all necessary classes and methods
     public HandleScripts(Context context){
         this.c = context;
     }
@@ -41,14 +44,17 @@ public class HandleScripts {
             scriptsInAssets = am.list(scriptFolderName);
             scriptFilesDirPath = c.getFilesDir().getPath() + File.separator + scriptFolderName;
             File scriptsFilesDir = new File(scriptFilesDirPath);
+            //Checking if the "scripts" directory exists in files
             if(!scriptsFilesDir.exists()) {
                 new File(scriptFilesDirPath).mkdirs();
             }
             boolean res = true;
             for (String file : scriptsInAssets)
+            //If the file name contains  a dot, it's most probably a single file and not dir. So treating it as copying file
                 if (file.contains("."))
                     res &= copyAsset(scriptFolderName + File.separator + file, scriptFilesDirPath + File.separator + file);
                 else
+            //Otherwise treating as copying dir
                     res &= copyAssetFolder();
             return res;
         } catch (Exception e) {
@@ -62,11 +68,13 @@ public class HandleScripts {
         InputStream in = null;
         OutputStream out = null;
         ArrayList<File> scriptsFiles = new ArrayList<>();
+        //Creating list of File objects inside assets
         for(int i=0; i<scriptsInAssets.length; i++){
             File f = new File(scriptFilesDirPath + File.separator + scriptsInAssets[i]);
             scriptsFiles.add(f);
         }
         for(int j=0; j<scriptsFiles.size(); j++){
+            //If the file doesn't exist in files dir, we copy it
             if(!scriptsFiles.get(j).exists()){
                 try {
                     in = am.open(from);
@@ -87,6 +95,7 @@ public class HandleScripts {
         }
         File parent = new File(scriptFilesDirPath);
         scriptsInFiles = parent.list();
+        //If the file was just copied, we make it executable
         if(isCopied){
            for(int file=0; file<scriptsInFiles.length; file++){
                try {
@@ -98,7 +107,7 @@ public class HandleScripts {
         }
         return isCopied;
     }
-
+    //Actual copying of the file
     public void copyFile(InputStream in, OutputStream out) throws IOException {
         byte[] buffer = new byte[1024];
         int read;
