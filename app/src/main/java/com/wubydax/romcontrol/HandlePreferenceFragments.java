@@ -1,5 +1,6 @@
 package com.wubydax.romcontrol;
 
+import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -16,6 +17,8 @@ import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.preference.SwitchPreference;
 import android.provider.Settings;
+import android.view.LayoutInflater;
+import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.Toast;
 
@@ -54,11 +57,11 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
     ContentResolver cr;
     ListAdapter adapter;
 
-/*Main constructor, manages what we need to do in the onCreate of each PreferenceFragment. We instantiate
-* this class in the onCreate method of each fragment and setting: shared preference file name (String spName),
-* as well is adding preferences from resource, by using spName in getIdentifier.
-* Basically, the shared preference name and the preference xml file will have the same name.
-* In addition, all the class variables are set here*/
+    /*Main constructor, manages what we need to do in the onCreate of each PreferenceFragment. We instantiate
+    * this class in the onCreate method of each fragment and setting: shared preference file name (String spName),
+    * as well is adding preferences from resource, by using spName in getIdentifier.
+    * Basically, the shared preference name and the preference xml file will have the same name.
+    * In addition, all the class variables are set here*/
     public HandlePreferenceFragments(Context context, PreferenceFragment pf, String spName) {
         this.pf = pf;
         this.c = context;
@@ -72,12 +75,12 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
         pf.addPreferencesFromResource(id);
     }
 
-/*Called from onResume method in PreferenceFragment. This method will set all the preferences upon resuming fragment,
-* by integrating the defaultValue (must be set in xml for each "valuable" preference item) and data retrived using
-* ContentResolver from Settings.System. Here we also register the OnSharedPreferenceChangeListener, which we will later
-* unregister in onPauseFragment.
-*
-* OnPreferenceClickListener is also initiated here, so our preferences are ready to go.*/
+    /*Called from onResume method in PreferenceFragment. This method will set all the preferences upon resuming fragment,
+    * by integrating the defaultValue (must be set in xml for each "valuable" preference item) and data retrived using
+    * ContentResolver from Settings.System. Here we also register the OnSharedPreferenceChangeListener, which we will later
+    * unregister in onPauseFragment.
+    *
+    * OnPreferenceClickListener is also initiated here, so our preferences are ready to go.*/
     public void onResumeFragment() {
         prefs.registerOnSharedPreferenceChangeListener(this);
         initAllKeys();
@@ -99,15 +102,11 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
 
     public void allGroups(Preference p) {
         PreferenceScreen ps = (PreferenceScreen) p;
-        if (ps.getKey() != null) {
-            if (ps.getKey().contains("script#") || ps.getKey().contains(".")) {
-                /*We set click listener only for preferences that have specific keys.
-                /*Preference screens without keys are meant to open nested preference screens.
-                /*Hence the (ps.getKey() != null) condition.*/
-                ps.setOnPreferenceClickListener(this);
-            }
+        ps.setOnPreferenceClickListener(this);
+
             /*Initiate icon view for preferences with keys that are interpreted as Intent
             *For more info see OnPreferenceClick method*/
+        if (ps.getKey() != null) {
             if (ps.getKey().contains(".")) {
                 int lastDot = ps.getKey().lastIndexOf(".");
                 String pkgName = ps.getKey().substring(0, lastDot);
@@ -126,33 +125,36 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
                 }
             }
         }
-        for (int i = 0; i < ps.getPreferenceCount(); i++) {
-            Preference p1 = ps.getPreference(i);
-            if (p1 instanceof PreferenceScreen) {
+
+            for (int i = 0; i < ps.getPreferenceCount(); i++) {
+                Preference p1 = ps.getPreference(i);
+                if (p1 instanceof PreferenceScreen) {
                 /*As we descend further on a preference tree, if we meet another PreferenceScreen, we repeat the allGroups method.
                 *This method will loop untill we don't have nested screeens anymore.*/
-                allGroups(p1);
+                    allGroups(p1);
 
+                }
             }
         }
-    }
-    //Returns a map of preference tree
-    public Map<Preference, PreferenceScreen> buildPreferenceParentTree() {
-        final Map<Preference, PreferenceScreen> result = new HashMap<>();
-        final Stack<PreferenceScreen> curParents = new Stack<>();
-        curParents.add(pf.getPreferenceScreen());
-        while (!curParents.isEmpty()) {
-            final PreferenceScreen parent = curParents.pop();
-            final int childCount = parent.getPreferenceCount();
-            for (int i = 0; i < childCount; ++i) {
-                final Preference child = parent.getPreference(i);
-                result.put(child, parent);
-                if (child instanceof PreferenceScreen)
-                    curParents.push((PreferenceScreen) child);
+
+        //Returns a map of preference tree
+        public Map<Preference, PreferenceScreen> buildPreferenceParentTree () {
+            final Map<Preference, PreferenceScreen> result = new HashMap<>();
+            final Stack<PreferenceScreen> curParents = new Stack<>();
+            curParents.add(pf.getPreferenceScreen());
+            while (!curParents.isEmpty()) {
+                final PreferenceScreen parent = curParents.pop();
+                final int childCount = parent.getPreferenceCount();
+                for (int i = 0; i < childCount; ++i) {
+                    final Preference child = parent.getPreference(i);
+                    result.put(child, parent);
+                    if (child instanceof PreferenceScreen)
+                        curParents.push((PreferenceScreen) child);
+                }
             }
+            return result;
         }
-        return result;
-    }
+
     /*Main onResume method.
     * Here we create a map of all the keys in existence in each SharedPreference
     * Here: keys are all the keys in preferences
@@ -160,6 +162,7 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
     * We  work through all the entries and sort them by instances of their objects.
     * Knowing that our preferences return different objects in preferences (Checkbox/boolean... etc),
     * we can set specific values and even find specific preferences, as we loop through the map*/
+
     private void initAllKeys() {
         Map<String, ?> keys = pm.getSharedPreferences().getAll();
 
@@ -227,6 +230,7 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
     public void onPauseFragment() {
         prefs.unregisterOnSharedPreferenceChangeListener(this);
     }
+
     /*We sort through all the possibilities of changes preferences
     * A key is provided as param for the method so we use it to specify a preference
     * as well as retrieve a value from sharedpreferences or database*/
@@ -326,7 +330,7 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
         * and we attempt to build intent.
         * We know from the allGroups() method that if the intent is not valid, the preference will not show at all.
         * Nevertheless. as precaution we catch an exception and show a toast that the app is not installed.*/
-        } else if (preference.getKey().contains(".")) {
+        } else if (preference.getKey()!=null&&preference.getKey().contains(".")) {
             String cls = preference.getKey();
             String pkg = cls.substring(0, cls.lastIndexOf("."));
             Intent intent = new Intent(Intent.ACTION_MAIN).setClassName(pkg,
@@ -339,8 +343,20 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
                 Toast.makeText(c, "App not installed or intent not valid", Toast.LENGTH_SHORT).show();
             }
 
+        } else if (preference.getKey() == null) {
+            setToolbarForNested(preference);
         }
         return true;
+    }
+
+    private void setToolbarForNested(Preference p) {
+        PreferenceScreen ps = (PreferenceScreen) p;
+        Dialog d = ps.getDialog();
+        android.support.v7.widget.Toolbar tb;
+        LinearLayout ll = (LinearLayout) d.findViewById(android.R.id.list).getParent();
+        tb = (android.support.v7.widget.Toolbar) LayoutInflater.from(c).inflate(R.layout.toolbar_default, ll, false);
+        ll.addView(tb, 0);
+
     }
 
 }
