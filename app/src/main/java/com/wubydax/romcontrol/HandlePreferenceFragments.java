@@ -54,6 +54,11 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
     ContentResolver cr;
     ListAdapter adapter;
 
+/*Main constructor, manages what we need to do in the onCreate of each PreferenceFragment. We instantiate
+* this class in the onCreate method of each fragment and setting: shared preference file name (String spName),
+* as well is adding preferences from resource, by using spName in getIdentifier.
+* Basically, the shared preference name and the preference xml file will have the same name.
+* In addition, all the class variables are set here*/
     public HandlePreferenceFragments(Context context, PreferenceFragment pf, String spName) {
         this.pf = pf;
         this.c = context;
@@ -67,6 +72,12 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
         pf.addPreferencesFromResource(id);
     }
 
+/*Called from onResume method in PreferenceFragment. This method will set all the preferences upon resuming fragment,
+* by integrating the defaultValue (must be set in xml for each "valuable" preference item) and data retrived using
+* ContentResolver from Settings.System. Here we also register the OnSharedPreferenceChangeListener, which we will later
+* unregister in onPauseFragment.
+*
+* OnPreferenceClickListener is also initiated here, so our preferences are ready to go.*/
     public void onResumeFragment() {
         prefs.registerOnSharedPreferenceChangeListener(this);
         initAllKeys();
@@ -74,11 +85,12 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
     }
 
     private void getAllPrefs() {
-
+        //Get all preferences in the main preference screen
         adapter = pf.getPreferenceScreen().getRootAdapter();
         for (int i = 0; i < adapter.getCount(); i++) {
             Preference p = (Preference) adapter.getItem(i);
             if (p instanceof PreferenceScreen) {
+                //Call allGroups method to retrieve all preferences in the nested Preference Screens
                 allGroups(p);
 
             }
@@ -89,16 +101,24 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
         PreferenceScreen ps = (PreferenceScreen) p;
         if (ps.getKey() != null) {
             if (ps.getKey().contains("script#") || ps.getKey().contains(".")) {
+                /*We set click listener only for preferences that have specific keys.
+                /*Preference screens without keys are meant to open nested preference screens.
+                /*Hence the (ps.getKey() != null) condition.*/
                 ps.setOnPreferenceClickListener(this);
             }
+            /*Initiate icon view for preferences with keys that are interpreted as Intent
+            *For more info see OnPreferenceClick method*/
             if (ps.getKey().contains(".")) {
                 int lastDot = ps.getKey().lastIndexOf(".");
                 String pkgName = ps.getKey().substring(0, lastDot);
                 try {
+                    //if application package exists, we will set the icon successfully
                     Drawable icon = c.getPackageManager().getApplicationIcon(pkgName);
                     ps.setIcon(icon);
                 } catch (PackageManager.NameNotFoundException e) {
                     e.printStackTrace();
+                    /*In case of exception, icon will not be set and we will remove the preference to avoid crashes on clicks
+                    *To find the parent for each preference screen we use HashMap to buil the parent tree*/
                     Map<Preference, PreferenceScreen> preferenceParentTree = buildPreferenceParentTree();
                     PreferenceScreen preferenceParent = preferenceParentTree.get(ps);
                     preferenceParent.removePreference(ps);
@@ -109,12 +129,14 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
         for (int i = 0; i < ps.getPreferenceCount(); i++) {
             Preference p1 = ps.getPreference(i);
             if (p1 instanceof PreferenceScreen) {
+                /*As we descend further on a preference tree, if we meet another PreferenceScreen, we repeat the allGroups method.
+                *This method will loop untill we don't have nested screeens anymore.*/
                 allGroups(p1);
 
             }
         }
     }
-
+    //Returns a map of preference tree
     public Map<Preference, PreferenceScreen> buildPreferenceParentTree() {
         final Map<Preference, PreferenceScreen> result = new HashMap<>();
         final Stack<PreferenceScreen> curParents = new Stack<>();
@@ -131,7 +153,13 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
         }
         return result;
     }
-
+    /*Main onResume method.
+    * Here we create a map of all the keys in existence in each SharedPreference
+    * Here: keys are all the keys in preferences
+    *       entry.getValue is an object (? in map) for the entry: boolean, int, string and so on
+    * We  work through all the entries and sort them by instances of their objects.
+    * Knowing that our preferences return different objects in preferences (Checkbox/boolean... etc),
+    * we can set specific values and even find specific preferences, as we loop through the map*/
     private void initAllKeys() {
         Map<String, ?> keys = pm.getSharedPreferences().getAll();
 
@@ -194,11 +222,14 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
         }
     }
 
-
+    /*Method is called from OnPause of the preference fragment and it's main function is
+    *to unregister the OnSharedPreferenceChangeListener*/
     public void onPauseFragment() {
         prefs.unregisterOnSharedPreferenceChangeListener(this);
     }
-
+    /*We sort through all the possibilities of changes preferences
+    * A key is provided as param for the method so we use it to specify a preference
+    * as well as retrieve a value from sharedpreferences or database*/
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         Preference p = pf.findPreference(key);
@@ -224,6 +255,7 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
                 ColorPickerPreference cpp = (ColorPickerPreference) pf.findPreference(key);
                 cpp.setColor(sharedPreferences.getInt(key, Color.WHITE));
         }
+        /*Calling main method to handle updating database based on preference changes*/
         updateDatabase(key, p, sharedPreferences);
     }
 
@@ -251,6 +283,13 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
     @Override
     public boolean onPreferenceClick(Preference preference) {
         if (preference.getKey() != null && preference.getKey().contains("script#")) {
+            /*We use a special char sequence (script#) to specify preference items that need to run shell script
+            * Upon click, the key is broken down to the specifier and what comes after the hash - which is script name
+            * Scripts are being copied from assets to the file dir of our app in onCreate of main activity
+            * If the script is found on it's intended path, it's checked for being executable.
+            * Although we chmod 755 all the files upon copying them in main activity,
+            * We need to make sure, so we check and set it executable if it's not
+            * Permission 700 (set by this method (setExecutable(true)) is sufficient for executing scripts)*/
             String scriptName = preference.getKey().substring(preference.getKey().lastIndexOf("#") + 1) + ".sh";
             String pathToScript = c.getFilesDir() + File.separator + "scripts" + File.separator + scriptName;
             File script = new File(pathToScript);
@@ -281,6 +320,12 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
                     e.printStackTrace();
                 }
             }
+        /*If preference key contains a dot ".", we assume the dev meant to create an intent to another app
+        * As per instructions, devs are required to enter full path to the main activity they wish to open in the intended app.
+        * In the following condition the key is broken down to package name and class name (full key)
+        * and we attempt to build intent.
+        * We know from the allGroups() method that if the intent is not valid, the preference will not show at all.
+        * Nevertheless. as precaution we catch an exception and show a toast that the app is not installed.*/
         } else if (preference.getKey().contains(".")) {
             String cls = preference.getKey();
             String pkg = cls.substring(0, cls.lastIndexOf("."));
