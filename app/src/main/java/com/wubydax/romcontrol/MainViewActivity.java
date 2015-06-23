@@ -95,7 +95,8 @@ public class MainViewActivity extends AppCompatActivity
         * 4. The POSITION of your new item in the string array MUST CORRESPOND to the position of your image in the integer array mIcons
         * 5. Create new PreferenceFragment or your own fragment or a method that you would like to invoke when a user clicks on your new item
         * 6. Continue down this file to a method onNavigationDrawerItemSelected(int position) - next method
-        * 7. Add an action based on position. Remember that positions in array are beginning at 0. So if your item is number 6 in array, it will have a position of 5... etc*/
+        * 7. Add an action based on position. Remember that positions in array are beginning at 0. So if your item is number 6 in array, it will have a position of 5... etc
+        * 8. You need to add same items to the int array in NavigationDrawerFragment, which has the same method*/
         String[] mTitles = getResources().getStringArray(R.array.nav_drawer_items);
         int[] mIcons = {R.drawable.ic_ui_mods,
                 R.drawable.ic_phone_mods,

@@ -114,14 +114,7 @@ public class NavigationDrawerFragment extends Fragment implements NavigationDraw
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mDrawerList.setLayoutManager(layoutManager);
         mDrawerList.setHasFixedSize(true);
-
-        final List<NavItem> navigationItems;
-
-
-        NavigationDrawerAdapter adapter = null;
-
-            adapter = new NavigationDrawerAdapter(getMenu(), getActivity());
-
+        NavigationDrawerAdapter adapter = new NavigationDrawerAdapter(getMenu(), getActivity());
         adapter.setNavigationDrawerCallbacks(this);
         mDrawerList.setAdapter(adapter);
         selectItem(mCurrentSelectedPosition);
@@ -145,6 +138,16 @@ public class NavigationDrawerFragment extends Fragment implements NavigationDraw
         selectItem(position);
     }
 
+    /*String array of item names is located in strings.xml under name nav_drawer_items
+        * If you wish to add more items you need to:
+        * 1. Add item to nav_drawer_items array
+        * 2. Add a valid material design icon/image to dir drawable
+        * 3. Add that image ID to the integer array below (int[] mIcons
+        * 4. The POSITION of your new item in the string array MUST CORRESPOND to the position of your image in the integer array mIcons
+        * 5. Create new PreferenceFragment or your own fragment or a method that you would like to invoke when a user clicks on your new item
+        * 6. Continue down this file to a method onNavigationDrawerItemSelected(int position) - next method
+        * 7. Add an action based on position. Remember that positions in array are beginning at 0. So if your item is number 6 in array, it will have a position of 5... etc
+        * You need to add the same images to int array in MainViewActivity, which has the same method*/
     public List<NavItem> getMenu() {
         List<NavItem> items = new ArrayList<>();
         String[] mTitles = getResources().getStringArray(R.array.nav_drawer_items);
@@ -266,22 +269,5 @@ public class NavigationDrawerFragment extends Fragment implements NavigationDraw
         // Forward the new configuration the drawer toggle component.
         mActionBarDrawerToggle.onConfigurationChanged(newConfig);
     }
-    private int getThemeId(){
-        int themeResId = 0;
-        PackageInfo packageInfo;
-        try
-        {
-            packageInfo = getActivity().getPackageManager().getPackageInfo(getActivity().getPackageName(), PackageManager.GET_META_DATA);
-            themeResId = packageInfo.applicationInfo.theme;
-
-        }
-        catch (PackageManager.NameNotFoundException e)
-        {
-
-        }
-        return themeResId;
-    }
-
-
 
 }
