@@ -11,9 +11,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
-import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
-import android.preference.PreferenceGroup;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.preference.SwitchPreference;
@@ -31,7 +29,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.TimeoutException;
-
 
 
 /*      Created by Roberto Mariani and Anna Berkovitch, 21/06/15
@@ -94,7 +91,7 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
             if (ps.getKey().contains("script#") || ps.getKey().contains(".")) {
                 ps.setOnPreferenceClickListener(this);
             }
-            if(ps.getKey().contains(".")){
+            if (ps.getKey().contains(".")) {
                 int lastDot = ps.getKey().lastIndexOf(".");
                 String pkgName = ps.getKey().substring(0, lastDot);
                 try {
@@ -102,8 +99,8 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
                     ps.setIcon(icon);
                 } catch (PackageManager.NameNotFoundException e) {
                     e.printStackTrace();
-                    Map<Preference,PreferenceScreen> preferenceParentTree=buildPreferenceParentTree();
-                    PreferenceScreen preferenceParent=preferenceParentTree.get(ps);
+                    Map<Preference, PreferenceScreen> preferenceParentTree = buildPreferenceParentTree();
+                    PreferenceScreen preferenceParent = preferenceParentTree.get(ps);
                     preferenceParent.removePreference(ps);
 
                 }
@@ -117,21 +114,19 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
             }
         }
     }
-    public  Map<Preference,PreferenceScreen> buildPreferenceParentTree()
-    {
-        final Map<Preference,PreferenceScreen> result=new HashMap<>();
-        final Stack<PreferenceScreen> curParents=new Stack<>();
+
+    public Map<Preference, PreferenceScreen> buildPreferenceParentTree() {
+        final Map<Preference, PreferenceScreen> result = new HashMap<>();
+        final Stack<PreferenceScreen> curParents = new Stack<>();
         curParents.add(pf.getPreferenceScreen());
-        while(!curParents.isEmpty())
-        {
-            final PreferenceScreen parent=curParents.pop();
-            final int childCount=parent.getPreferenceCount();
-            for(int i=0;i<childCount;++i)
-            {
-                final Preference child=parent.getPreference(i);
-                result.put(child,parent);
-                if(child instanceof PreferenceScreen)
-                    curParents.push((PreferenceScreen)child);
+        while (!curParents.isEmpty()) {
+            final PreferenceScreen parent = curParents.pop();
+            final int childCount = parent.getPreferenceCount();
+            for (int i = 0; i < childCount; ++i) {
+                final Preference child = parent.getPreference(i);
+                result.put(child, parent);
+                if (child instanceof PreferenceScreen)
+                    curParents.push((PreferenceScreen) child);
             }
         }
         return result;
@@ -225,10 +220,6 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
                 MyEditTextPreference et = (MyEditTextPreference) pf.findPreference(key);
                 et.setSummary(sharedPreferences.getString(key, ""));
                 break;
-            case "SeekBarPreference":
-                SeekBarPreference sbp = (SeekBarPreference) pf.findPreference(key);
-                sbp.setProgress(sharedPreferences.getInt(key, 0));
-                break;
             case "ColorPickerPreference":
                 ColorPickerPreference cpp = (ColorPickerPreference) pf.findPreference(key);
                 cpp.setColor(sharedPreferences.getInt(key, Color.WHITE));
@@ -290,16 +281,16 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
                     e.printStackTrace();
                 }
             }
-        }else if(preference.getKey().contains(".")){
+        } else if (preference.getKey().contains(".")) {
             String cls = preference.getKey();
             String pkg = cls.substring(0, cls.lastIndexOf("."));
-            Intent intent  = new Intent(Intent.ACTION_MAIN).setClassName(pkg,
+            Intent intent = new Intent(Intent.ACTION_MAIN).setClassName(pkg,
                     cls).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     .setComponent(new ComponentName(pkg,
                             cls));
             try {
                 c.startActivity(intent);
-            }catch (ActivityNotFoundException anf){
+            } catch (ActivityNotFoundException anf) {
                 Toast.makeText(c, "App not installed or intent not valid", Toast.LENGTH_SHORT).show();
             }
 

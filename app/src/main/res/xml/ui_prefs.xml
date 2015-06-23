@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" xmlns:robobunny="http://robobunny.com">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:title="Status Bar Mods">
         <SwitchPreference
             android:defaultValue="true"
@@ -33,43 +33,27 @@
             android:summary="Click see what happens"
             android:title="New Preference Screen" />
         <com.wubydax.romcontrol.SeekBarPreference
+            min="0"
+            unitsRight="Kb/s"
             android:defaultValue="10"
+            android:icon="@null"
             android:key="network_traffic_autohide_threshold"
             android:max="100"
             android:title="Autohide Threshold"
-            robobunny:min="0"
-            robobunny:unitsLeft=""
-            robobunny:unitsRight="Kb/s"
-            android:icon="@null"/>
+            />
         <PreferenceScreen
 
             android:summary="New Preference screen"
-            android:title="New Preference Screen" >
-            <PreferenceCategory
-                android:title="new category"/>
-            <CheckBoxPreference android:title="Checkbox" android:key="text_checkbox"/>
-            <SwitchPreference android:title="Switch" android:key="test_switch"/>
-            <PreferenceScreen
-                android:key="script#second"
+            android:title="New Preference Screen">
+            <PreferenceCategory android:title="new category" />
+            <CheckBoxPreference
+                android:key="text_checkbox"
+                android:title="Checkbox" />
+            <SwitchPreference
+                android:key="test_switch"
+                android:title="Switch" />
+        </PreferenceScreen>
 
-                android:summary="New Preference screen"
-                android:title="New Preference Screen" >
-                <PreferenceCategory
-                    android:title="new category"/>
-                <CheckBoxPreference android:title="Checkbox" android:key="text_checkbox"/>
-                <SwitchPreference android:title="Switch" android:key="test_switch"/>
-                <PreferenceScreen
-                    android:key="script#third"
-
-                    android:summary="New Preference screen"
-                    android:title="New Preference Screen" >
-                    <PreferenceCategory
-                        android:title="new category"/>
-                    <CheckBoxPreference android:title="Checkbox" android:key="text_checkbox"/>
-                    <SwitchPreference android:title="Switch" android:key="test_switch"/>
-                </PreferenceScreen>
-            </PreferenceScreen>
-            </PreferenceScreen>
 
     </PreferenceCategory>
 
