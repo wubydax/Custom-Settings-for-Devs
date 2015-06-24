@@ -251,12 +251,18 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
                 break;
             case "MyListPreference":
                 MyListPreference l = (MyListPreference) pf.findPreference(key);
+                String lValue = sharedPreferences.getString(key, "");
                 CharSequence[] mEntries = l.getEntries();
-                l.setSummary(mEntries[l.findIndexOfValue(sharedPreferences.getString(key, ""))]);
+                if(lValue!=null) {
+                    l.setSummary(mEntries[l.findIndexOfValue(lValue)]);
+                }
                 break;
             case "MyEditTextPreference":
                 MyEditTextPreference et = (MyEditTextPreference) pf.findPreference(key);
-                et.setSummary(sharedPreferences.getString(key, ""));
+                String etValue = sharedPreferences.getString(key, "");
+                if(etValue!=null) {
+                    et.setSummary(sharedPreferences.getString(key, ""));
+                }
                 break;
             case "ColorPickerPreference":
                 ColorPickerPreference cpp = (ColorPickerPreference) pf.findPreference(key);
