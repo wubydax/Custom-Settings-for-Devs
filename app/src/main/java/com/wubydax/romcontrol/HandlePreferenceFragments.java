@@ -17,6 +17,7 @@ import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.preference.SwitchPreference;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
@@ -56,6 +57,8 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
     SharedPreferences.Editor ed;
     ContentResolver cr;
     ListAdapter adapter;
+    boolean isOutOfBounds;
+
 
     /*Main constructor, manages what we need to do in the onCreate of each PreferenceFragment. We instantiate
     * this class in the onCreate method of each fragment and setting: shared preference file name (String spName),
@@ -126,34 +129,34 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
             }
         }
 
-            for (int i = 0; i < ps.getPreferenceCount(); i++) {
-                Preference p1 = ps.getPreference(i);
-                if (p1 instanceof PreferenceScreen) {
+        for (int i = 0; i < ps.getPreferenceCount(); i++) {
+            Preference p1 = ps.getPreference(i);
+            if (p1 instanceof PreferenceScreen) {
                 /*As we descend further on a preference tree, if we meet another PreferenceScreen, we repeat the allGroups method.
                 *This method will loop untill we don't have nested screeens anymore.*/
-                    allGroups(p1);
+                allGroups(p1);
 
-                }
             }
         }
+    }
 
-        //Returns a map of preference tree
-        public Map<Preference, PreferenceScreen> buildPreferenceParentTree () {
-            final Map<Preference, PreferenceScreen> result = new HashMap<>();
-            final Stack<PreferenceScreen> curParents = new Stack<>();
-            curParents.add(pf.getPreferenceScreen());
-            while (!curParents.isEmpty()) {
-                final PreferenceScreen parent = curParents.pop();
-                final int childCount = parent.getPreferenceCount();
-                for (int i = 0; i < childCount; ++i) {
-                    final Preference child = parent.getPreference(i);
-                    result.put(child, parent);
-                    if (child instanceof PreferenceScreen)
-                        curParents.push((PreferenceScreen) child);
-                }
+    //Returns a map of preference tree
+    public Map<Preference, PreferenceScreen> buildPreferenceParentTree() {
+        final Map<Preference, PreferenceScreen> result = new HashMap<>();
+        final Stack<PreferenceScreen> curParents = new Stack<>();
+        curParents.add(pf.getPreferenceScreen());
+        while (!curParents.isEmpty()) {
+            final PreferenceScreen parent = curParents.pop();
+            final int childCount = parent.getPreferenceCount();
+            for (int i = 0; i < childCount; ++i) {
+                final Preference child = parent.getPreference(i);
+                result.put(child, parent);
+                if (child instanceof PreferenceScreen)
+                    curParents.push((PreferenceScreen) child);
             }
-            return result;
         }
+        return result;
+    }
 
     /*Main onResume method.
     * Here we create a map of all the keys in existence in each SharedPreference
@@ -167,6 +170,7 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
         Map<String, ?> keys = pm.getSharedPreferences().getAll();
 
         for (Map.Entry<String, ?> entry : keys.entrySet()) {
+
             String key = entry.getKey();
             Preference p = pf.findPreference(key);
 
@@ -205,27 +209,57 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
 
             } else if (entry.getValue() instanceof String) {
                 String prefString = prefs.getString(key, "");
-                String actualString;
-                actualString = Settings.System.getString(cr, key);
-                if (actualString == null) {
-                    Settings.System.putString(cr, key, prefString);
-                    actualString = prefString;
-                } else {
-                    if (!prefString.equals(actualString)) {
-                        ed.putString(key, actualString).commit();
+                String actualString = Settings.System.getString(cr, key);
+                String t = (actualString == null) ? prefString : actualString;
+
+                try {
+                    if (p instanceof MyListPreference) {
+                        MyListPreference mlp = (MyListPreference) pf.findPreference(key);
+                        CharSequence[] entries = mlp.getEntries();
+                        String s = (String) entries[mlp.findIndexOfValue(t)];
+                        Log.d("listview index", s);
+                        isOutOfBounds = false;
                     }
+
+                } catch (IndexOutOfBoundsException e) {
+                    Log.d("listview index", "exception");
+
+                    isOutOfBounds = true;
+
                 }
                 if (p instanceof MyListPreference) {
-                    MyListPreference l = (MyListPreference) pf.findPreference(key);
-                    CharSequence[] mEntries = l.getEntries();
-                    int mValueIndex = l.findIndexOfValue(actualString);
-                    l.setSummary(mEntries[mValueIndex]);
-                } else if (p instanceof MyEditTextPreference) {
+                    if (!isOutOfBounds) {
+                        if (actualString == null) {
+                            Settings.System.putString(cr, key, prefString);
+                        }
+                        if (!prefString.equals(t)) {
+                            Toast.makeText(c, t + "/" + prefString, Toast.LENGTH_SHORT).show();
+
+                            ed.putString(key, t).commit();
+                        }
+
+
+                        MyListPreference l = (MyListPreference) pf.findPreference(key);
+                        CharSequence[] mEntries = l.getEntries();
+                        int mValueIndex = l.findIndexOfValue(t);
+                        l.setSummary(mEntries[mValueIndex]);
+                    }
+                }
+                if (p instanceof MyEditTextPreference) {
+                    if (actualString == null) {
+                        Settings.System.putString(cr, key, prefString);
+                    }
+                    if (!prefString.equals(t)) {
+                        Toast.makeText(c, t + "/" + prefString, Toast.LENGTH_SHORT).show();
+
+                        ed.putString(key, t).commit();
+                    }
                     MyEditTextPreference et = (MyEditTextPreference) pf.findPreference(key);
-                    et.setSummary(actualString);
+                    et.setSummary(t);
                 }
             }
         }
+
     }
 
     /*Method is called from OnPause of the preference fragment and it's main function is
@@ -252,21 +286,27 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
             case "MyListPreference":
                 MyListPreference l = (MyListPreference) pf.findPreference(key);
                 String lValue = sharedPreferences.getString(key, "");
-                CharSequence[] mEntries = l.getEntries();
-                if(lValue!=null) {
+
+                if (!isOutOfBounds) {
+                    CharSequence[] mEntries = l.getEntries();
+                    int mValueIndex = l.findIndexOfValue(lValue);
+                    l.setSummary(mEntries[mValueIndex]);
                     l.setSummary(mEntries[l.findIndexOfValue(lValue)]);
+                } else {
+                    l.setSummary("");
                 }
                 break;
             case "MyEditTextPreference":
                 MyEditTextPreference et = (MyEditTextPreference) pf.findPreference(key);
                 String etValue = sharedPreferences.getString(key, "");
-                if(etValue!=null) {
+                if (etValue != null) {
                     et.setSummary(sharedPreferences.getString(key, ""));
                 }
                 break;
             case "ColorPickerPreference":
                 ColorPickerPreference cpp = (ColorPickerPreference) pf.findPreference(key);
                 cpp.setColor(sharedPreferences.getInt(key, Color.WHITE));
+                break;
         }
         /*Calling main method to handle updating database based on preference changes*/
         updateDatabase(key, p, sharedPreferences);
@@ -339,7 +379,7 @@ public class HandlePreferenceFragments implements SharedPreferences.OnSharedPref
         * and we attempt to build intent.
         * We know from the allGroups() method that if the intent is not valid, the preference will not show at all.
         * Nevertheless. as precaution we catch an exception and show a toast that the app is not installed.*/
-        } else if (preference.getKey()!=null&&preference.getKey().contains(".")) {
+        } else if (preference.getKey() != null && preference.getKey().contains(".")) {
             String cls = preference.getKey();
             String pkg = cls.substring(0, cls.lastIndexOf("."));
             Intent intent = new Intent(Intent.ACTION_MAIN).setClassName(pkg,

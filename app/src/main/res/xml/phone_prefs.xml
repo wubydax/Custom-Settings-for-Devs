@@ -11,4 +11,10 @@
         android:summaryOff="Call recording disabled"
         android:summaryOn="Callrecording enabled"
         android:title="Enable/Disable Call Recording" />
+    <com.wubydax.romcontrol.MyListPreference
+        android:defaultValue="2"
+        android:entries="@array/some_entries"
+        android:entryValues="@array/some_values"
+        android:key="some_position"
+        android:title="Some Position" />
 </PreferenceScreen>

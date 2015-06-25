@@ -145,7 +145,7 @@ public class NavigationDrawerFragment extends Fragment implements NavigationDraw
         * 3. Add that image ID to the integer array below (int[] mIcons
         * 4. The POSITION of your new item in the string array MUST CORRESPOND to the position of your image in the integer array mIcons
         * 5. Create new PreferenceFragment or your own fragment or a method that you would like to invoke when a user clicks on your new item
-        * 6. Continue down this file to a method onNavigationDrawerItemSelected(int position) - next method
+        * 6. Continue to MainViewActivity (if you haven't done the changes there already) to a method onNavigationDrawerItemSelected(int position) - method after getMenu()
         * 7. Add an action based on position. Remember that positions in array are beginning at 0. So if your item is number 6 in array, it will have a position of 5... etc
         * You need to add the same images to int array in MainViewActivity, which has the same method*/
     public List<NavItem> getMenu() {

@@ -21,32 +21,27 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
-import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.Animation;
 import android.widget.Adapter;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.software.shell.fab.ActionButton;
 import com.stericson.RootShell.exceptions.RootDeniedException;
 import com.stericson.RootShell.execution.Command;
 import com.stericson.RootTools.RootTools;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -80,10 +75,10 @@ public class MainViewActivity extends AppCompatActivity
         suPrompt.execute();
 
 
-
         // populate the navigation drawer
 
     }
+
     //Creates a list of NavItem objects to retrieve elements for the Navigation Drawer list of choices
     public List<NavItem> getMenu() {
         List<com.wubydax.romcontrol.NavItem> items = new ArrayList<>();
@@ -212,8 +207,9 @@ public class MainViewActivity extends AppCompatActivity
 
 
     }
+
     //Gets string for shell command to activate reboot menu items, using stericson RootTools lib
-    private void getRebootAction(String command){
+    private void getRebootAction(String command) {
         Command c = new Command(0, command);
         try {
             RootTools.getShell(true).add(c);
@@ -225,6 +221,7 @@ public class MainViewActivity extends AppCompatActivity
             e.printStackTrace();
         }
     }
+
     //Initializes the reboot menu as arrray of views, finds by id and sets animations and onClickListener to each in a loop
     private void initRebootMenu() {
         ids = new int[]{R.id.action_reboot, R.id.action_reboot_hotboot, R.id.action_reboot_recovery, R.id.action_reboot_bl, R.id.action_reboot_systemUI};
@@ -238,6 +235,7 @@ public class MainViewActivity extends AppCompatActivity
             rebootFabs[i].setShowAnimation(ActionButton.Animations.ROLL_FROM_RIGHT);
         }
     }
+
     //Show/Hide reboot menu with animation depending on the view's visibility
     public void showHideRebootMenu() {
 
@@ -252,8 +250,9 @@ public class MainViewActivity extends AppCompatActivity
             }
         }
     }
+
     //Activates a chosen theme based on single choice list dialog, which opens upon selecting item at position 4 in nav drawer list
-    private void showThemeChooserDialog(){
+    private void showThemeChooserDialog() {
         AlertDialog.Builder b = new AlertDialog.Builder(this);
         Adapter adapter = new ArrayAdapter<>(this, R.layout.simple_list_item_single_choice, getResources().getStringArray(R.array.theme_items));
         b.setTitle(getString(R.string.theme_chooser_dialog_title))
@@ -261,10 +260,10 @@ public class MainViewActivity extends AppCompatActivity
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         //Invokes method initTheme(int) - next method based on chosen theme
-                       initTheme(which);
+                        initTheme(which);
                     }
                 })
-                       ;
+        ;
         AlertDialog d = b.create();
         d.show();
         TypedValue typedValue = new TypedValue();
@@ -281,18 +280,20 @@ public class MainViewActivity extends AppCompatActivity
         int paddingBottom = Math.round(this.getResources().getDimension(R.dimen.dialog_listView_bottom_padding));
         lv.setPadding(0, paddingTop, 0, paddingBottom);
     }
+
     /*Writes the chosen position integer (in theme chooser dialog) into common shared preferences.
     * Based on that integer (currently 0 or 1), a helper class ThemeSelectorUtility (which is called at the very beginning of onCreate)
     * then reads that integer when it's instantiated and sets the theme for the activity.
     * The activity is them rebooted, overriding pending transitions, to make the theme switch seemless.*/
-    private void initTheme(int i){
+    private void initTheme(int i) {
         PreferenceManager.getDefaultSharedPreferences(this).edit().putInt("theme_prefs", i).commit();
         finish();
-        this.overridePendingTransition(0,R.animator.fadeout);
+        this.overridePendingTransition(0, R.animator.fadeout);
         startActivity(new Intent(this, MainViewActivity.class));
         this.overridePendingTransition(R.animator.fadein, 0);
 
     }
+
     //Asynchronous class to ask for su rights at the beginning of the activity. If the root rights have been denied or the device is not rooted, the app will not run.
     public class CheckSu extends AsyncTask<String, Integer, Boolean> {
         ProgressDialog mProgressDialog;
@@ -338,22 +339,22 @@ public class MainViewActivity extends AppCompatActivity
 
 
             }else{
-                //Provided the su privileges have been established, we run the activity as usual, beginning with setting content view
-                setContentView(R.layout.activity_main_view);
-                mToolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
-                setSupportActionBar(mToolbar);
+            //Provided the su privileges have been established, we run the activity as usual, beginning with setting content view
+            setContentView(R.layout.activity_main_view);
+            mToolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
+            setSupportActionBar(mToolbar);
 
-                mNavigationDrawerFragment = (NavigationDrawerFragment)
-                        getFragmentManager().findFragmentById(R.id.fragment_drawer);
+            mNavigationDrawerFragment = (NavigationDrawerFragment)
+                    getFragmentManager().findFragmentById(R.id.fragment_drawer);
 
-                // Set up the drawer. Look in NavigationDrawerFragment for more details
-                mNavigationDrawerFragment.setup(R.id.fragment_drawer, (DrawerLayout) findViewById(R.id.drawer), mToolbar, MainViewActivity.this);
-                initRebootMenu();
-                am = getAssets();
-                //Calling the helper class HandleScripts to copy scripts to the files folder and chmod 755.
-                //Scripts can be then accessed and executed using script#scriptname key for PreferenceScreen in PreferenceFragments
-                hs = new HandleScripts(MainViewActivity.this);
-                hs.copyAssetFolder();
+            // Set up the drawer. Look in NavigationDrawerFragment for more details
+            mNavigationDrawerFragment.setup(R.id.fragment_drawer, (DrawerLayout) findViewById(R.id.drawer), mToolbar, MainViewActivity.this);
+            initRebootMenu();
+            am = getAssets();
+            //Calling the helper class HandleScripts to copy scripts to the files folder and chmod 755.
+            //Scripts can be then accessed and executed using script#scriptname key for PreferenceScreen in PreferenceFragments
+            hs = new HandleScripts(MainViewActivity.this);
+            hs.copyAssetFolder();
             }
 
 

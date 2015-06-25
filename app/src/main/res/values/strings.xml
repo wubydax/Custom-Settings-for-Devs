@@ -8,7 +8,7 @@
         <item>Phone Mods</item>
         <item>Framework and General</item>
         <item>Useful Apps</item>
-        <item>Settings</item>
+        <item>Set Theme</item>
     </string-array>
     <string-array name="clock_position_entries">
         <item>Right clock</item>
@@ -16,6 +16,16 @@
         <item>Left Clock</item>
     </string-array>
     <string-array name="clock_position_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+    <string-array name="some_entries">
+        <item>Right clock</item>
+        <item>Center Clock</item>
+        <item>Left Clock</item>
+    </string-array>
+    <string-array name="some_values">
         <item>1</item>
         <item>2</item>
         <item>3</item>
